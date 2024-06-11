@@ -1,5 +1,8 @@
 .venv/
 download_datas/
+__pycache__/
+*.py[cod]
+*.so
 requirements.txt
 *.config.json
 .prettierrc

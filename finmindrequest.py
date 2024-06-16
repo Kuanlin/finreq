@@ -2,6 +2,7 @@ import json, requests, time
 from datetime import date, timedelta
 from dateutils import date_range
 import pandas as pd
+import os
 
 
 f = open("privatekey.config.json", "r")
@@ -95,7 +96,7 @@ def fin_taiwansecuritiestraderinfo_to_csv():
     data = fin_taiwansecuritiestraderinfo()
     pdata = pd.DataFrame(data) 
     print(f"{user_count}/{request_limit} | {d.isoformat()} | ", end="", flush=True)
-    pdata.to_csv(f".\\download_datas\\taiwansecuritiestraderinfo\\retrievedate_{d.isoformat()}.csv", index=False)
+    pdata.to_csv(f".\\download_datas\\taiwansecuritiestraderinfo\\{d.isoformat()}.csv", index=False)
     print("v", flush=True)
 
 
@@ -131,20 +132,37 @@ def fin_taiwanstocktradingdailyreport_facade_to_csv(start_date:date, end_date:da
     if "securities_trader_ids" in kwargs:
         key = "securities_trader_id"
         vals = kwargs["securities_trader_ids"]
+    elif "secids":
+        key = "securities_trader_id"
+        vals = kwargs["secids"]
     elif "stock_ids" in kwargs:
         key = "data_id"
         vals = kwargs["stock_ids"]
+    elif "stkids":
+        key = "data_id"
+        vals = kwargs["stkids"]
     elif "data_ids" in kwargs:
         key = "data_id"
         vals = kwargs["data_ids"]
     assert type(vals) == list
+
+    skip_exists = True
+    if "skip_exists" in kwargs:
+        skip_exists = kwargs["skip_exists"]
+    assert type(skip_exists) == bool
+
     for d in date_range(start_date, end_date):
         for v in vals:
+            path_name = f".\\download_datas\\taiwanstocktradingdailyreport\\{d.isoformat()},{key},{v}.csv"
+            if skip_exists and os.path.exists(path_name):
+                print(f"{user_count}/{request_limit} | {d.isoformat()} | {key}:{v} | *", flush=True)
+                continue
             data = fin_taiwanstocktradingdailyreport(d, **{key: v})
             pdata = pd.DataFrame(data) 
             print(f"{user_count}/{request_limit} | {d.isoformat()} | {key}:{v} | ", end="", flush=True)
-            pdata.to_csv(f".\\download_datas\\taiwanstocktradingdailyreport\\{d.isoformat()}_{key}_{v}.csv", index=False)
+            pdata.to_csv(path_name, index=False)
             print("v", flush=True)
+
 
 #TaiwanStockWarrantTradingDailyReport
 @finmindrequests
@@ -191,13 +209,24 @@ def fin_taiwanstockwarranttradingdailyreport_facade_to_csv(start_date:date, end_
         key = "data_id"
         vals = kwargs["data_ids"]
     assert type(vals) == list
+
+    skip_exists = True
+    if "skip_exists" in kwargs:
+        skip_exists = kwargs["skip_exists"]
+    assert type(skip_exists) == bool
+
     for d in date_range(start_date, end_date):
         for v in vals:
+            path_name = f".\\download_datas\\taiwanstockwarranttradingdailyreport\\{d.isoformat()},{key},{v}.csv"
+            if skip_exists and os.path.exists(path_name):
+                print(f"{user_count}/{request_limit} | {d.isoformat()} | {key}:{v} | *", flush=True)
+                continue
             data = fin_taiwanstockwarranttradingdailyreport(d, **{key: v})
             pdata = pd.DataFrame(data) 
             print(f"{user_count}/{request_limit} | {d.isoformat()} | {key}:{v} | ", end="", flush=True)
-            pdata.to_csv(f".\\download_datas\\taiwanstockwarranttradingdailyreport\\{d.isoformat()}_{key}_{v}.csv", index=False)
+            pdata.to_csv(path_name, index=False)
             print("v", flush=True)
+
 
 
 

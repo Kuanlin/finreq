@@ -1,6 +1,6 @@
 import json, requests, time
 from datetime import date, timedelta
-from dateutils import date_range
+from dateutils import date_range, skipdates_include_weekend
 import pandas as pd
 import os
 
@@ -68,7 +68,7 @@ def fin_taiwanstockpricek(d:date):
 
 def fin_taiwanstockpricek_duration_to_csv(start_date:date, end_date:date):
     global user_count, request_limit, wait_count, sleep_time
-    for d in date_range(start_date, end_date):
+    for d in date_range(start_date, end_date, skipdates=skipdates_include_weekend):
         data = fin_taiwanstockpricek(d)
         pdata = pd.DataFrame(data) 
         print(f"{user_count}/{request_limit} | {d.isoformat()} | ", end="", flush=True)
@@ -151,9 +151,12 @@ def fin_taiwanstocktradingdailyreport_facade_to_csv(start_date:date, end_date:da
         skip_exists = kwargs["skip_exists"]
     assert type(skip_exists) == bool
 
-    for d in date_range(start_date, end_date):
+    for d in date_range(start_date, end_date, skipdates=skipdates_include_weekend):
         for v in vals:
-            path_name = f".\\download_datas\\taiwanstocktradingdailyreport\\{d.isoformat()},{key},{v}.csv"
+            vn = v
+            if v[-1].islower():
+                vn = vn+'1'
+            path_name = f".\\download_datas\\taiwanstocktradingdailyreport\\{d.isoformat()},{key},{vn}.csv"
             if skip_exists and os.path.exists(path_name):
                 print(f"{user_count}/{request_limit} | {d.isoformat()} | {key}:{v} | *", flush=True)
                 continue
@@ -215,9 +218,12 @@ def fin_taiwanstockwarranttradingdailyreport_facade_to_csv(start_date:date, end_
         skip_exists = kwargs["skip_exists"]
     assert type(skip_exists) == bool
 
-    for d in date_range(start_date, end_date):
+    for d in date_range(start_date, end_date, skipdates=skipdates_include_weekend):
         for v in vals:
-            path_name = f".\\download_datas\\taiwanstockwarranttradingdailyreport\\{d.isoformat()},{key},{v}.csv"
+            vn = v
+            if v[-1].islower():
+                vn = vn+'1'
+            path_name = f".\\download_datas\\taiwanstockwarranttradingdailyreport\\{d.isoformat()},{key},{vn}.csv"
             if skip_exists and os.path.exists(path_name):
                 print(f"{user_count}/{request_limit} | {d.isoformat()} | {key}:{v} | *", flush=True)
                 continue
@@ -228,9 +234,13 @@ def fin_taiwanstockwarranttradingdailyreport_facade_to_csv(start_date:date, end_
             print("v", flush=True)
 
 
-
+def read_csv(path_name, encoding='utf8'):
+    f = open(path_name, "r", encoding=encoding)
+    return pd.read_csv(f)
 
 
 dtf = lambda x: date.fromisoformat(x)
-import code
-code.interact(local=locals())
+
+if __name__ == '__main__':
+    import code
+    code.interact(local=locals())

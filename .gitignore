@@ -6,3 +6,4 @@ __pycache__/
 requirements.txt
 *.config.json
 .prettierrc
+test*.py

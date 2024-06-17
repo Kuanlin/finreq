@@ -6,19 +6,21 @@ from io import StringIO
 import os
 
 
-def twse_warrantstock_pd(d:date):
-    d_str = d.isoformat().replace('-','')
-    payload = {
-        "date" : d_str,
-    }
+def twse_warrantstock_pd(d:date = None):
+    if not d:
+        d = date.today()
+    assert type(d) == date
+    payload = { "date" : d.isoformat().replace('-','') }
     url = f"https://www.twse.com.tw/rwd/en/stock/warrantStock"
     resp = requests.get(url, params=payload)
-    data = resp.json()
-    return resp
-    content = str(resp.content)
-    #content = content.split('\n', 2)[2] #pop out first 2 lines
-    cio = StringIO(content)
-    return pd.read_csv(cio)
+    js = resp.json()
+    js["fields"][2] = "Warrant Increase/Decrease"
+    js["fields"][5] = "Underlying Instrument Increase/Decrease"
+    for d in js["data"]:
+        if len(d)>15:
+            d.pop(4)
+    fpd = pd.DataFrame(js["data"], columns=js["fields"])
+    return fpd
 
     
 
